@@ -54,7 +54,7 @@ app.post("/urls/:shortURL/delete" , (req, res) => {
 
 app.post("/urls/:shortURL" , (req, res) => {
   const shortURL = req.params.shortURL
-  urlDatabase[shortURL].longURL = req.body.updatedURL
+  urlDatabase[shortURL] = req.body.updatedURL
   res.redirect("/urls")
 })
 
