@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
-const emailCheck = require("./functionHelpers")
+const {emailCheck, passwordCheck} = require("./functionHelpers")
 
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
@@ -55,7 +55,7 @@ app.get("/hello", (req, res) => {
 app.get("/urls", (req, res) => {
   const userId = req.cookies["user_id"]
   const user = users[userId]
-  console.log(users)
+  // console.log(users)
   const templateVars = { user: user, urls: urlDatabase};
   
   res.render("urls_index", templateVars);
@@ -111,7 +111,7 @@ app.post("/register" , (req, res) => {
       email: req.body.email, 
       password: password
     }
-    console.log(users)
+    // console.log(users)
     res.cookie("user_id", userId)
     // console.log(users[userId].id)
     res.redirect("/urls")
@@ -125,11 +125,21 @@ app.post("/register" , (req, res) => {
 
 app.post("/login", (req, res) => {
   // console.log(req.body)
-  const userId = req.cookies["user_id"]
-  const user = users[userId]
-  res.cookie("user_id", user);
-  res.redirect("/urls");     
+  const user = emailCheck(req.body.email, users)
+  // const password = passwordCheck(req.body.password, users)
+  if (!user) {
+    res.status(403).send(`<html><body>This email cannot be found. Please register <a href="/register">here</a>.</body></html>\n`);
+  } else if (req.body.password !== users[user].password) {
+    res.status(403).send(`<html><body>The password you have entered is not correct. Please try <a href="/login">again</a>.</body></html>\n`);
+  } else {
+    // console.log(req.body.password)
+    // console.log(users[user].password)
+    res.cookie("user_id", user);
+    res.redirect("/urls");  
+  }
 });
+
+
 
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id");
@@ -157,7 +167,9 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: req.params.longURL, username: req.cookies["username"] };
+  const userId = req.cookies["user_id"]
+  const user = users[userId]
+  const templateVars = { shortURL: req.params.shortURL, longURL: req.params.longURL, user: user};
   res.render("urls_show", templateVars);
 });
 

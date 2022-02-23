@@ -9,5 +9,15 @@ const emailCheck = function(email, database) {
   return undefined
 }
 
+// const passwordCheck = function(password, database) {
+//   for (const user in database) {
+//     if (database[user].password === password) {
+//       return user
+//     }
+//   }
+//   return undefined
+// }
 
-module.exports = emailCheck
+module.exports = {
+  emailCheck
+}
