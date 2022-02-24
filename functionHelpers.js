@@ -1,34 +1,24 @@
+///////////////////////////////////////////
+//Helper functions for express_server.js //
+//////////////////////////////////////////
 
-
+//emailCheck determines if the email is in the given database
 const emailCheck = function(email, database) {
   for (const user in database) {
     if (database[user].email === email) {
-      return user
+      return user;
     }
   }
-  return undefined
-}
+  return undefined;
+};
 
-// const passwordCheck = function(password, database) {
-//   for (const user in database) {
-//     if (database[user].password === password) {
-//       return user
-//     }
-//   }
-//   return undefined
-// }
+//generateRandomString generates a random string for unique userID
+const generateRandomString = function() {
+  return Math.random().toString(36).substr(2, 6);
+};
 
-
-const isCookie = function(cookie, database) {
-  for (const user in database) {
-    if (cookie === user) {
-      return true
-    }
-  }
-  return false
-}
-
-const personalURLS = function (id, database) {
+//personalURLS creates a personal URL for each unique userID which creates uniqueness
+const personalURLS = function(id, database) {
   let userUrls = {};
   for (const element in database) {
     if (database[element].userID === id) {
@@ -42,6 +32,6 @@ const personalURLS = function (id, database) {
 
 module.exports = {
   emailCheck,
-  isCookie,
-  personalURLS
-}
+  personalURLS,
+  generateRandomString
+};
