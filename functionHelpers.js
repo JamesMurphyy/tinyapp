@@ -18,6 +18,30 @@ const emailCheck = function(email, database) {
 //   return undefined
 // }
 
+
+const isCookie = function(cookie, database) {
+  for (const user in database) {
+    if (cookie === user) {
+      return true
+    }
+  }
+  return false
+}
+
+const personalURLS = function (id, database) {
+  let userUrls = {};
+  for (const element in database) {
+    if (database[element].userID === id) {
+      userUrls[element] = database[element];
+    }
+  }
+
+  return userUrls;
+};
+
+
 module.exports = {
-  emailCheck
+  emailCheck,
+  isCookie,
+  personalURLS
 }
