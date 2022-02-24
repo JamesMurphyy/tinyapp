@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
+const bcrypt = require('bcryptjs');
 const {emailCheck, isCookie, personalURLS} = require("./functionHelpers")
 
 const cookieSession = require('cookie-session');
@@ -55,7 +56,7 @@ function generateRandomString() {
 
 
 app.get("/", (req, res) => {
-  console.log(req.session["user_id"])
+  // console.log(req.session["user_id"])
   if (req.session["user_id"]) {
     res.redirect("/urls")
   } else {
@@ -93,7 +94,7 @@ app.get("/urls", (req, res) => {
   // console.log(users)
   if (userId) {
     let templateVars = {urls: personalURLS(userId, urlDatabase), user: user}
-    console.log(templateVars)
+    // console.log(templateVars)
     // const templateVars = { user: user, urls: urlDatabase};
     res.render("urls_index", templateVars);
   } else {
@@ -180,8 +181,9 @@ app.post("/urls/:shortURL" , (req, res) => {
   if (req.session.user_id) {
 
     urlDatabase[shortURL].longURL = req.body.updatedURL;
-    console.log(urlDatabase[shortURL])
-    console.log(req.body.updatedURL)
+    // console.log(urlDatabase[shortURL])
+    // console.log(req.body.updatedURL)
+    console.log(users)
     res.redirect(`/urls`);
     
   } else {
@@ -201,8 +203,6 @@ app.post("/register" , (req, res) => {
   const userId = generateRandomString()
   const password = req.body.password
   const email = req.body.email
-
-
   if (!email || !password) {
     res.status(400).send(`<html><body> enter a valid email and passoword <a href="/register">here</a>.</body></html>\n`);
   } else if (emailCheck(req.body.email, users)) {
@@ -211,7 +211,7 @@ app.post("/register" , (req, res) => {
     users[userId] = {
       id: userId, 
       email: req.body.email, 
-      password: password
+      password: bcrypt.hashSync(req.body.password, 10)
     }
     // console.log(users)
     req.session.user_id = userId
@@ -230,9 +230,15 @@ app.post("/login", (req, res) => {
   // console.log(req.body)
   const user = emailCheck(req.body.email, users)
   // const password = passwordCheck(req.body.password, users)
+  // console.log(users[user].password)
+  // console.log(req.body.password)
+
+
+
   if (!user) {
     res.status(403).send(`<html><body>This email cannot be found. Please register <a href="/register">here</a>.</body></html>\n`);
-  } else if (req.body.password !== users[user].password) {
+  } else if (!bcrypt.compareSync(req.body.password, users[user].password)) {
+    // users[users].password
     res.status(403).send(`<html><body>The password you have entered is not correct. Please try <a href="/login">again</a>.</body></html>\n`);
   } else {
     // console.log(req.body.password)
@@ -302,3 +308,4 @@ app.get("/urls/:shortURL", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
