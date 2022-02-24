@@ -25,7 +25,6 @@ const personalURLS = function(id, database) {
       userUrls[element] = database[element];
     }
   }
-
   return userUrls;
 };
 

@@ -52,7 +52,7 @@ app.get("/urls", (req, res) => {
     res.render("urls_index", templateVars);
   } else {
     //Sends error code if user is not registered/logged in.
-    res.status(401).send(`<html><body>Sorry! Please <a href="/login">login</a> or <a href="/register">register</a> to access this page.</body></html>\n`);
+    res.status(401).send(`<html><body>Please <a href="/login">login</a> or <a href="/register">register</a> to access this page.</body></html>\n`);
   }
 });
 
@@ -63,7 +63,7 @@ app.get("/urls/new", (req, res) => {
     //If user adds the new URL, it saves to the URL database.
     const userId = req.session.user_id;
     const user = users[userId];
-    const templateVars = { user: user};
+    const templateVars = {user: user};
     res.render('urls_new', templateVars);
   } else {
     //Redirects user to login if no cookie appearing.
@@ -74,6 +74,10 @@ app.get("/urls/new", (req, res) => {
 //GET request for applications "/urls/:shortURL" page.
 app.get("/urls/:shortURL", (req, res) => {
   const userId = req.session.user_id;
+  //Checks to see if theres a valid user_id cookie -- if not then user is asked to login or register.
+  if (!userId) {
+    return res.status(401).send(`<html><body>Sorry! Please <a href="/login">login</a> or <a href="/register">register</a> to access this page.</body></html>\n`);
+  }
   const user = users[userId];
   const shortURL = req.params.shortURL;
   //Makes sure the URL is the personalized URLdatabase and puts the given information into templateVars object.
@@ -83,7 +87,7 @@ app.get("/urls/:shortURL", (req, res) => {
   //Checks to make sure there is a proper URL and if the URL belongs to the specific user before sending the templateVar information to urls_show (information used in the document).
   if (!urlDatabase[shortURL]) {
     res.status(404).send(`<html><body>Sorry! This URL does not exist! Please try <a href="/urls">again</a>.</body></html>\n`);
-  } else if (!userId || !userUrls[shortURL]) {
+  } else if (!userUrls[shortURL]) {
     res.status(401).send(`<html><body>Sorry! This URL does not belong to you.</body></html>\n`);
   } else {
     res.render("urls_show", templateVars);
@@ -142,18 +146,19 @@ app.post("/urls/:shortURL" , (req, res) => {
 
 //POST request for applications "/urls/:shortURL/delete" page.
 app.post("/urls/:shortURL/delete" , (req, res) => {
-  //Checks to see if theres a valid user_id cookie
-  if (req.session.user_id) {
-    const shortURL = req.params.shortURL;
-    //Checks to see if the current user_id is the same ID that is registered as the database library.
-    if (req.session.user_id === urlDatabase[shortURL].userID) {
-      //If true, the database library for that user and the specific shortURL is deleted off the personalized database.
-      delete urlDatabase[shortURL];
-      res.redirect("/urls");
-    } else {
-      //If no valid user_id cookie found, the user is prompted with an error message.
-      res.status(401).send(`<html><body>Sorry! Please <a href="/login">login</a> or <a href="/register">register</a> to access this page.</body></html>\n`);
-    }
+  //Checks to see if theres a valid user_id cookie -- if not then user is asked to login or register.
+  if (!req.session.user_id) {
+    return res.status(401).send(`<html><body>Sorry! Please <a href="/login">login</a> or <a href="/register">register</a> to access this page.</body></html>\n`);
+  }
+  const shortURL = req.params.shortURL;
+  //Checks to see if the current user_id is the same ID that is registered as the database library.
+  if (req.session.user_id === urlDatabase[shortURL].userID) {
+    //If true, the database library for that user and the specific shortURL is deleted off the personalized database.
+    delete urlDatabase[shortURL];
+    res.redirect("/urls");
+  } else {
+    //If no valid user_id cookie found, the user is prompted with an error message.
+    res.status(401).send(`<html><body>Sorry! Please <a href="/login">login</a> or <a href="/register">register</a> to access this page.</body></html>\n`);
   }
 });
 
